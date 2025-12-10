@@ -10,6 +10,8 @@ public class DialogueController : MonoBehaviour
     public DialogueManager dialogueManager;  // Reference to the Dialogue Manager
     public List<DialogueCSVModel> dialogues = new List<DialogueCSVModel>();
 
+    public DialogueObject dialogueToPlay;
+
     private void Awake()
     {
         if(Instance == null)
@@ -22,6 +24,11 @@ public class DialogueController : MonoBehaviour
         
     }
 
+    private void Start()
+    {
+        DialogueRunner.Instance.StartDialogue(dialogueToPlay);
+    }
+
     // Call this method when the player interacts with the NPC
     public void SetupDialogue(List<DialogueCSVModel> dialogues)
     {
@@ -30,12 +37,12 @@ public class DialogueController : MonoBehaviour
         {
             toShow.Add(new Dialogue(csv));
         }
-        dialogueManager.SetupDialogue(toShow);
+       // dialogueManager.SetupDialogue(toShow);
     }
 
     public void StartDialogue(string index)
     {
-        dialogueManager.ShowDialogue();
+       // dialogueManager.ShowDialogue();
     }
 
     private void Update()

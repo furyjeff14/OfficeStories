@@ -1,65 +1,68 @@
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
-using TMPro;
 using System.Collections.Generic;
-using Unity.VisualScripting.Dependencies.NCalc;
+using UnityEngine;
 
 public class DialogueManager : MonoBehaviour
 {
-    public TextMeshProUGUI dialogueText;            // UI text for the dialogue
-    public Image portraitImage;          // UI image for the character portrait
-    public Button nextButton;            // Button to advance dialogue
-    public GameObject dialoguePanel;     // Panel holding the dialogue UI elements
+    public DialogueObject currentDialogue;
+    public DialogueLine currentLine;
 
-    private int currentLineIndex = 0;    // Index of the current dialogue line
-    List<Dialogue> dialogueScenario = new List<Dialogue>();
-    private Dialogue currentDialogue;    // The current dialogue being shown
+    private Stack<DialogueLine> history = new Stack<DialogueLine>();
 
-    // Start is called before the first frame update
-    void Start()
+    public void StartDialogue(DialogueObject dialogue)
     {
+        currentDialogue = dialogue;
 
-        nextButton.onClick.AddListener(ShowNextLine);
-        dialoguePanel.SetActive(false);  // Hide the panel initially
-    }
-
-    // Method to start dialogue
-    public void SetupDialogue(List<Dialogue> dialogue)
-    {
-        currentLineIndex = 0;
-        dialogueScenario = dialogue;
-        currentDialogue = dialogue[currentLineIndex];
-    }
-
-    public void ShowDialogue()
-    {
-        dialogueText.text = currentDialogue.phrase;
-        Sprite characterSprite = CharacterSpriteManager.Instance.GetSprite(currentDialogue.characterSprite);
-        portraitImage.sprite = characterSprite;
-        dialoguePanel.SetActive(true);
-    }
-
-    // Show next line of dialogue
-    private void ShowNextLine()
-    {
-        currentLineIndex++;
-        currentDialogue = dialogueScenario[currentLineIndex];
-        dialogueText.text = currentDialogue.phrase;
-        Sprite characterSprite = CharacterSpriteManager.Instance.GetSprite(currentDialogue.characterSprite);
-        portraitImage.sprite = characterSprite;
-
-        if(currentLineIndex >= dialogueScenario.Count - 1)
+        if (dialogue.lines.Count == 0)
         {
-            EndDialogue();
+            Debug.LogWarning("Dialogue has no lines.");
+            return;
         }
+
+        currentLine = dialogue.lines[0];
+
+        history.Clear();
+        DisplayCurrentLine();
     }
 
-    // End the dialogue
-    private void EndDialogue()
+    public void ChooseOption(DialogueChoice choice)
     {
-        dialoguePanel.SetActive(false);  // Hide the dialogue panel
-        portraitImage.sprite = null;
-        // You can trigger additional events here like starting a new scene, giving the player choices, etc.
+        if (currentLine != null)
+            history.Push(currentLine);
+
+        // --- SAME DIALOGUE BRANCH ---
+        if (choice.nextLineIndex >= 0 &&
+            choice.nextLineIndex < currentDialogue.lines.Count)
+        {
+            currentLine = currentDialogue.lines[choice.nextLineIndex];
+            DisplayCurrentLine();
+            return;
+        }
+
+        // --- SWITCH TO ANOTHER DIALOGUE ---
+        if (choice.nextDialogue != null &&
+            choice.nextDialogue.lines.Count > 0)
+        {
+            StartDialogue(choice.nextDialogue);
+            return;
+        }
+
+        // --- END DIALOGUE ---
+        currentLine = null;
+        DisplayCurrentLine();
+    }
+
+    public void GoBack()
+    {
+        if (history.Count == 0)
+            return;
+
+        currentLine = history.Pop();
+        DisplayCurrentLine();
+    }
+
+    private void DisplayCurrentLine()
+    {
+        // Update UI
+        Debug.Log($"[{currentLine.speaker}] {currentLine.textKey}");
     }
 }

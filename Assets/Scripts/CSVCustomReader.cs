@@ -31,7 +31,7 @@ public class CSVCustomReader : MonoBehaviour
 
             string[] values = lines[i].Split(',');
             // Process your values here, e.g., store them in a list of custom objects
-            Debug.Log("Row: " + string.Join(", ", values));
+            //Debug.Log("Row: " + string.Join(", ", values));
 
             if (values.Length < 5) {
                 Debug.LogError("Values are not enough for id : " + values[0]);
