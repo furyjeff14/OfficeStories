@@ -8,8 +8,9 @@ public class DialogueChoice
     public string choiceTextKey;
 
     [Header("Branching")]
+    [Tooltip("This is the next dialogue line id to be called when we choose this answer")]
     public int nextLineIndex = -1;      // -1 = no next line in this DialogueObject
-    public string nextLineId;           // optional, prefer GUID approach for robustness
+    [Tooltip("We use this if we want to jump to a different dialogue")]
     public DialogueObject nextDialogue; // still allowed (safe)
 
     [Header("Conditions (optional)")]

@@ -1,0 +1,6 @@
+/* Simple node styling */
+.node {
+    background-color: #333333;
+    color: white;
+    border-radius: 6px;
+}

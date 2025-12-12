@@ -10,30 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a34d8f5901ebdd448965a399cb057335, type: 3}
-  m_Name: NewDialogue
+  m_Name: NewDialogue 1
   m_EditorClassIdentifier: 
-  lines:
-  - dialogueNumber: 0
-    speakerSlot: 0
-    isDialogueNoSpeaker: 0
-    speaker: 
-    textKey: 
-    speakerImg: {fileID: 0}
-    background: {fileID: 0}
-    choices: []
-    nodePosition: {x: 0, y: 0}
-    nextLineIndex: -1
-  - dialogueNumber: 0
-    speakerSlot: 0
-    isDialogueNoSpeaker: 0
-    speaker: 
-    textKey: 
-    speakerImg: {fileID: 0}
-    background: {fileID: 0}
-    choices: []
-    nodePosition: {x: 0, y: 0}
-    nextLineIndex: -1
-  autoAdvance: 0
+  lines: []
+  autoAdvance: 1
   onDialogueStart:
     m_PersistentCalls:
       m_Calls: []

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using static UnityEditor.Progress;
 
 [CreateAssetMenu(
     fileName = "NewDialogue",
@@ -22,23 +21,24 @@ public class DialogueObject : ScriptableObject
 
     private void OnValidate()
     {
-   
-        for (int i  = 0; i < lines.Count; i++)
+
+        // Ensure dialogueNumber and sensible nextLineIndex defaults
+        for (int i = 0; i < lines.Count; i++)
         {
+            if (lines[i] == null) continue;
             lines[i].dialogueNumber = i;
-            int choicesCount = lines[i].choices.Count;
-            if (choicesCount > 0)
+
+            // If choices exist, set default nextLineIndex only when it is currently -1
+            for (int j = 0; j < lines[i].choices.Count; j++)
             {
-                for (int j = 0; j < choicesCount; j++)
-                {
-                    if (j < choicesCount)
-                    {
-                        lines[i].choices[j].nextLineIndex = i + 1;
-                    } else
-                    {
-                        lines[i].choices[j].nextLineIndex = -1;
-                    }
-                }
+                if (lines[i].choices[j] == null) continue;
+
+                // Default behaviour: point to next line (i + 1) if in range, else -1.
+                int defaultNext = (i + 1 < lines.Count) ? i + 1 : -1;
+
+                // Only override if nextLineIndex is -1 (i.e. not manually set).
+                if (lines[i].choices[j].nextLineIndex == -1)
+                    lines[i].choices[j].nextLineIndex = defaultNext;
             }
         }
 

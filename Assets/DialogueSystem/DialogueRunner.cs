@@ -11,10 +11,13 @@ public class DialogueRunner : MonoBehaviour
     [SerializeField]
     private Stack<DialogueLine> history = new Stack<DialogueLine>();
 
+    [SerializeField] GameObject dialogueContainer;
+
     [Header("UI References")]
     public TextMeshProUGUI speakerText;
     public TextMeshProUGUI dialogueText;
     public Transform choicesContainer;
+    public Transform dialogueNameContainer;
     public Button choiceButtonPrefab;
     public Button nextButton;
     public Button previousButton;
@@ -28,7 +31,7 @@ public class DialogueRunner : MonoBehaviour
     [SerializeField]
     private Image dialogueBackground;
     [SerializeField]
-    private Image dialogueCharacter1;
+    private Image[] dialogueCharacters;
 
     private int nextDialogueLine = 0;
 
@@ -84,6 +87,7 @@ public class DialogueRunner : MonoBehaviour
     {
         history.Clear();
         currentDialogue = dialogue;
+        dialogueContainer.SetActive(true);
         if (dialogue.lines.Count > 0)
             ShowLine(dialogue.lines[0]);
         else
@@ -97,7 +101,24 @@ public class DialogueRunner : MonoBehaviour
         dialogueBackground.sprite = line.background;
         speakerText.text = line.speaker;
         dialogueText.text = line.textKey;
-        dialogueCharacter1.sprite = line.speakerImg;
+
+        if (!line.isDialogueNoSpeaker)
+        {
+            dialogueCharacters[line.speakerSlot].sprite = line.speakerImg;
+        }
+
+        if (line.speaker.Length <= 0)
+        {
+            dialogueNameContainer.gameObject.SetActive(false);
+        }
+        else
+        {
+            dialogueNameContainer.gameObject.SetActive(true);
+        }
+        if (!dialogueCharacters[line.speakerSlot].gameObject.activeSelf && !line.isDialogueNoSpeaker)
+        {
+            dialogueCharacters[line.speakerSlot].gameObject.SetActive(true);
+        }
 
         foreach (Transform child in choicesContainer)
             Destroy(child.gameObject);
@@ -167,6 +188,8 @@ public class DialogueRunner : MonoBehaviour
 
     void EndDialogue()
     {
+        Debug.Log("End dialogue");
+        dialogueContainer.SetActive(false);
         speakerText.text = "";
         dialogueText.text = "";
         foreach (Transform child in choicesContainer)
