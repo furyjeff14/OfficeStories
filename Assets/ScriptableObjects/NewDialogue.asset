@@ -22,8 +22,8 @@ MonoBehaviour:
     background: {fileID: 0}
     choices: []
     nodePosition: {x: 0, y: 0}
-    nextLineIndex: -1
-  - dialogueNumber: 0
+    NextLineIndexDefault: -1
+  - dialogueNumber: 1
     speakerSlot: 0
     isDialogueNoSpeaker: 0
     speaker: 
@@ -31,8 +31,8 @@ MonoBehaviour:
     speakerImg: {fileID: 0}
     background: {fileID: 0}
     choices: []
-    nodePosition: {x: 0, y: 0}
-    nextLineIndex: -1
+    nodePosition: {x: 358, y: -15}
+    NextLineIndexDefault: -1
   autoAdvance: 0
   onDialogueStart:
     m_PersistentCalls:

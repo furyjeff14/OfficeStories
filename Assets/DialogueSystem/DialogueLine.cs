@@ -36,10 +36,18 @@ public class DialogueLine
     [Tooltip("Next line index if there are no choices (default output)")]
     public int nextLineIndex = -1;
 
-    public int NextLineIndexDefault
+    public int NextLineIndexDefault = -1;
+
+    public event Action OnChangedNextLineIndex;
+    public int NextLineIndex
     {
         get => nextLineIndex;
-        set => nextLineIndex = value;
+        set
+        {
+            if (nextLineIndex == value) return;
+            nextLineIndex = value;
+            OnChangedNextLineIndex?.Invoke();
+        }
     }
 
     public DialogueLine nextDialogue;

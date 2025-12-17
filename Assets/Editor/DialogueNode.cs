@@ -60,6 +60,15 @@ public class DialogueNode : Node
         dialogueNumberField.SetEnabled(false); // read-only
         mainContainer.Add(dialogueNumberField);
 
+        var nextLineIndexField = new IntegerField("Next Line Index") { value = line.NextLineIndex };
+        nextLineIndexField.RegisterValueChangedCallback(evt => {line.NextLineIndex = evt.newValue; });
+        mainContainer.Add(nextLineIndexField);
+
+        line.OnChangedNextLineIndex += () =>
+        {
+            nextLineIndexField.SetValueWithoutNotify(line.NextLineIndex);
+        };
+
         var speakerSlotField = new IntegerField("Speaker Slot") { value = line.speakerSlot };
         speakerSlotField.RegisterValueChangedCallback(evt => line.speakerSlot = evt.newValue);
         mainContainer.Add(speakerSlotField);
@@ -101,6 +110,10 @@ public class DialogueNode : Node
         var addChoiceBtn = new UnityEngine.UIElements.Button(() =>
         {
             var newChoice = new DialogueChoice { choiceTextKey = "New Choice", nextLineIndex = -1 };
+            if(dialogueLine.choices.Count == 0)
+            {
+                outputContainer.Clear();
+            }
             dialogueLine.choices.Add(newChoice);
             AddChoicePort(newChoice);
             RefreshPorts();

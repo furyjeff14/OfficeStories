@@ -12,7 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34d8f5901ebdd448965a399cb057335, type: 3}
   m_Name: NewDialogue 1
   m_EditorClassIdentifier: 
-  lines: []
+  lines:
+  - dialogueNumber: 1
+    speakerSlot: 0
+    isDialogueNoSpeaker: 0
+    speaker: 
+    textKey: 
+    speakerImg: {fileID: 0}
+    background: {fileID: 0}
+    choices: []
+    nodePosition: {x: 420, y: -4}
+    NextLineIndexDefault: 0
+  - dialogueNumber: 2
+    speakerSlot: 0
+    isDialogueNoSpeaker: 0
+    speaker: 
+    textKey: 
+    speakerImg: {fileID: 0}
+    background: {fileID: 0}
+    choices: []
+    nodePosition: {x: 0, y: 0}
+    NextLineIndexDefault: -1
   autoAdvance: 1
   onDialogueStart:
     m_PersistentCalls:

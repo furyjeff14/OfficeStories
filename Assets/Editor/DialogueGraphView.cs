@@ -9,15 +9,14 @@ using UnityEditor;
 public class DialogueGraphView : GraphView
 {
     private DialogueGraphWindow window;
-    private DialogueObject dialogue;
 
     public DialogueObject GetCurrentDialogue() => window.GetCurrentDialogue();
-    private HashSet<Edge> existingEdges = new HashSet<Edge>();
+
+    private bool isLoadingGraph;
 
     public DialogueGraphView(DialogueGraphWindow wnd, DialogueObject dlg)
     {
         window = wnd;
-        dialogue = dlg;
 
         // Grid background
         var grid = new GridBackground();
@@ -30,9 +29,9 @@ public class DialogueGraphView : GraphView
         this.AddManipulator(new SelectionDragger());
         this.AddManipulator(new RectangleSelector());
 
-        // Add edge connector for dragging edges
-        var edgeConnector = new EdgeConnector<Edge>(new DialogueEdgeConnector(this, dialogue));
-        this.AddManipulator(edgeConnector);
+        //Add edge connector for dragging edges
+        //var edgeConnector = new EdgeConnector<Edge>(new DialogueEdgeConnector(this, dialogue));
+        //this.AddManipulator(edgeConnector);
 
         // Event to handle edges creation
         graphViewChanged += OnGraphViewChanged;
@@ -40,26 +39,32 @@ public class DialogueGraphView : GraphView
 
     private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
     {
-        // Handle new edges
+        // Handle created edges
         if (changes.edgesToCreate != null)
         {
             foreach (var edge in changes.edgesToCreate)
             {
                 ConnectEdge(edge);
-                existingEdges.Add(edge); // track new edge
             }
         }
 
-        // Detect deleted edges
-        var currentEdges = new HashSet<Edge>(edges.ToList().Cast<Edge>());
-        foreach (var oldEdge in existingEdges)
+       
+        if (changes.elementsToRemove != null)
         {
-            if (!currentEdges.Contains(oldEdge))
+            foreach (var element in changes.elementsToRemove)
             {
-                DisconnectEdge(oldEdge);
+                // Handle removed edges
+                if (element is Edge edge)
+                {
+                    DisconnectEdge(edge);
+                }
+                else if (element is DialogueNode node && changes.elementsToRemove.Count == 1)
+                {
+                    GetCurrentDialogue().lines.RemoveAt(node.dialogueLine.dialogueNumber);
+                }
             }
         }
-        existingEdges = currentEdges;
+
 
         return changes;
     }
@@ -72,18 +77,20 @@ public class DialogueGraphView : GraphView
         var inputNode = edge.input.node as DialogueNode;
         if (outputNode == null || inputNode == null) return;
 
-        int portIndex = (int)(edge.output.userData ?? -1);
+        int portIndex = outputNode.outputPorts.IndexOf(edge.output);
 
         if (outputNode.dialogueLine.choices.Count > 0 && portIndex >= 0)
         {
             // This output corresponds to a choice
+            Debug.Log("Choices: " + portIndex);
             outputNode.dialogueLine.choices[portIndex].nextLineIndex = inputNode.dialogueLine.dialogueNumber;
             outputNode.dialogueLine.choices[portIndex].nextDialogue = null;
         }
         else
         {
             // Default non-choice output
-            outputNode.dialogueLine.nextLineIndex = inputNode.dialogueLine.dialogueNumber;
+            
+            outputNode.dialogueLine.NextLineIndex = inputNode.dialogueLine.dialogueNumber;
             outputNode.dialogueLine.nextDialogue = null;
         }
 
@@ -96,8 +103,9 @@ public class DialogueGraphView : GraphView
 
     private void DisconnectEdge(Edge edge)
     {
+        if (isLoadingGraph)
+            return;
         if (edge == null || edge.output == null) return;
-
         var outputNode = edge.output.node as DialogueNode;
         if (outputNode == null) return;
 
@@ -111,7 +119,7 @@ public class DialogueGraphView : GraphView
         }
         else
         {
-            outputNode.dialogueLine.nextLineIndex = -1;
+            outputNode.dialogueLine.NextLineIndex = -1;
         }
 
 #if UNITY_EDITOR
@@ -123,6 +131,8 @@ public class DialogueGraphView : GraphView
     public void LoadDialogue(DialogueObject dialogue)
     {
         if (dialogue == null) return;
+
+        isLoadingGraph = true;
 
         DeleteElements(graphElements.ToList());
 
@@ -146,16 +156,29 @@ public class DialogueGraphView : GraphView
         {
             for (int i = 0; i < node.outputPorts.Count; i++)
             {
-                var choice = i < node.dialogueLine.choices.Count ? node.dialogueLine.choices[i] : null;
-                int targetIndex = choice != null ? choice.nextLineIndex : node.dialogueLine.NextLineIndexDefault;
-
-                if (targetIndex >= 0 && nodesByNumber.TryGetValue(targetIndex, out var targetNode))
+                int targetIndex = -1;
+                Edge edge = null;
+                if (node.dialogueLine.choices.Count > 0)
                 {
-                    var edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
+                    var choice = i < node.dialogueLine.choices.Count ? node.dialogueLine.choices[i] : null;
+
+                    targetIndex = choice != null ? choice.nextLineIndex : node.dialogueLine.NextLineIndexDefault;
+
+                    if (targetIndex >= 0 && nodesByNumber.TryGetValue(targetIndex, out var targetNode))
+                    {
+                        edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
+                    }
+                } else if(node.dialogueLine.NextLineIndex != -1 && nodesByNumber.TryGetValue(node.dialogueLine.NextLineIndex, out var targetNode))
+                {
+                    edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
+                }
+                if(edge != null)
+                {
                     AddElement(edge);
                 }
             }
         }
+        isLoadingGraph = false;
     }
 
     public void AddDialogueNode(DialogueLine line)

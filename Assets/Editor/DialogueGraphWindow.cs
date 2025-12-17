@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public class DialogueGraphWindow : EditorWindow
 {
-    DialogueGraphView graphView;
+    DialogueGraphView graphView = null;
     DialogueObject currentDialogue;
 
     [MenuItem("Window/Dialogue/Node Dialogue Editor")]
@@ -20,28 +20,44 @@ public class DialogueGraphWindow : EditorWindow
 
     private void OnEnable()
     {
-        ConstructGraphView();
-        GenerateToolbar();
+        //ConstructGraphView();
+        //GenerateToolbar();
+
+        Selection.selectionChanged += OnSelectionChanged;
+        OnSelectionChanged(); // load immediately if already selected
     }
 
     private void OnDisable()
     {
-        if (graphView != null)
-            rootVisualElement.Remove(graphView);
+       // if (graphView != null && rootVisualElement.Contains(graphView)) 
+            //rootVisualElement.Remove(graphView);
+
+        Selection.selectionChanged -= OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged()
+    {
+        if (Selection.activeObject is DialogueObject asset)
+        {
+            currentDialogue = asset;
+
+            if (graphView == null)
+                ConstructGraphView();
+
+            graphView.LoadDialogue(currentDialogue);
+        }
     }
 
     private void ConstructGraphView()
     {
-        if (graphView == null)
-        {
-            graphView = new DialogueGraphView(this, currentDialogue);
-            graphView.StretchToParentSize();
-            rootVisualElement.Add(graphView);
-        }
+        if (graphView != null)
+            return;
 
-        // If a DialogueObject is already selected, load it
-        if (currentDialogue != null)
-            graphView.LoadDialogue(currentDialogue);
+        graphView = new DialogueGraphView(this, currentDialogue);
+        graphView.StretchToParentSize();
+        rootVisualElement.Add(graphView);
+
+        GenerateToolbar();
     }
 
     private void GenerateToolbar()
