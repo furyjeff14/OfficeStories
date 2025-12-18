@@ -84,14 +84,14 @@ public class DialogueGraphView : GraphView
             // This output corresponds to a choice
             Debug.Log("Choices: " + portIndex);
             outputNode.dialogueLine.choices[portIndex].nextLineIndex = inputNode.dialogueLine.dialogueNumber;
-            outputNode.dialogueLine.choices[portIndex].nextDialogue = null;
+            outputNode.dialogueLine.choices[portIndex].nextDialogueFile = "";
         }
         else
         {
             // Default non-choice output
             
             outputNode.dialogueLine.NextLineIndex = inputNode.dialogueLine.dialogueNumber;
-            outputNode.dialogueLine.nextDialogue = null;
+            outputNode.dialogueLine.nextDialogueFile = "";
         }
 
 #if UNITY_EDITOR
@@ -115,7 +115,7 @@ public class DialogueGraphView : GraphView
         if (portIndex < outputNode.dialogueLine.choices.Count)
         {
             outputNode.dialogueLine.choices[portIndex].nextLineIndex = -1;
-            outputNode.dialogueLine.choices[portIndex].nextDialogue = null;
+            outputNode.dialogueLine.choices[portIndex].nextDialogueFile = "";
         }
         else
         {
@@ -134,13 +134,21 @@ public class DialogueGraphView : GraphView
 
         isLoadingGraph = true;
 
-        DeleteElements(graphElements.ToList());
+        // Remove old elements
+        var elementsToRemove = graphElements.ToList();
+        foreach (var element in elementsToRemove)
+            RemoveElement(element);
 
         Dictionary<int, DialogueNode> nodesByNumber = new Dictionary<int, DialogueNode>();
 
-        // Create nodes
-        foreach (var line in dialogue.lines)
+        // Copy lines to avoid modification issues
+        var linesCopy = dialogue.lines.ToArray();
+
+        // --- Step 1: Create all nodes ---
+        foreach (var line in linesCopy)
         {
+            if (line == null) continue;
+
             var node = new DialogueNode(line, this);
             AddElement(node);
 
@@ -151,35 +159,38 @@ public class DialogueGraphView : GraphView
             nodesByNumber.Add(line.dialogueNumber, node);
         }
 
-        // Reconnect edges based on nextLineIndex
+        // --- Step 2: Connect edges ---
         foreach (var node in nodesByNumber.Values)
         {
             for (int i = 0; i < node.outputPorts.Count; i++)
             {
-                int targetIndex = -1;
                 Edge edge = null;
-                if (node.dialogueLine.choices.Count > 0)
+
+                if (node.dialogueLine.choices.Count > 0 && i < node.dialogueLine.choices.Count)
                 {
-                    var choice = i < node.dialogueLine.choices.Count ? node.dialogueLine.choices[i] : null;
+                    var choice = node.dialogueLine.choices[i];
 
-                    targetIndex = choice != null ? choice.nextLineIndex : node.dialogueLine.NextLineIndexDefault;
-
-                    if (targetIndex >= 0 && nodesByNumber.TryGetValue(targetIndex, out var targetNode))
-                    {
+                    if (choice.nextLineIndex >= 0 && nodesByNumber.TryGetValue(choice.nextLineIndex, out var targetNode))
                         edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
-                    }
-                } else if(node.dialogueLine.NextLineIndex != -1 && nodesByNumber.TryGetValue(node.dialogueLine.NextLineIndex, out var targetNode))
-                {
-                    edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
                 }
-                if(edge != null)
+                else
                 {
+                    if (node.dialogueLine.NextLineIndex >= 0 && nodesByNumber.TryGetValue(node.dialogueLine.NextLineIndex, out var targetNode))
+                        edge = node.outputPorts[i].ConnectTo(targetNode.inputPort);
+                }
+
+                if (edge != null)
                     AddElement(edge);
-                }
             }
+
+            // Refresh the node UI
+            node.RefreshExpandedState();
+            node.RefreshPorts();
         }
+
         isLoadingGraph = false;
     }
+
 
     public void AddDialogueNode(DialogueLine line)
     {

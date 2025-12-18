@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(DialogueObject))]
-public class DialogueStoryEditor : Editor
+public class DialogueStoryImportExportEditor : Editor
 {
     public override void OnInspectorGUI()
     {
@@ -25,7 +25,7 @@ public class DialogueStoryEditor : Editor
 
             if (!string.IsNullOrEmpty(path))
             {
-                DialogueExporter.Export(dialogue, path);
+                DialogueStoryExporter.Export(dialogue, path);
             }
         }
     }

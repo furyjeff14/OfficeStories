@@ -30,10 +30,7 @@ public class DialogueLine
     private Vector2 nodePosition;
 
     //Used for graph view
-    /// <summary>
-    /// Stores the default output line for this node (used when there are no choices).
-    /// </summary>
-    [Tooltip("Next line index if there are no choices (default output)")]
+    [HideInInspector]
     public int nextLineIndex = -1;
 
     public int NextLineIndexDefault = -1;
@@ -50,7 +47,8 @@ public class DialogueLine
         }
     }
 
-    public DialogueLine nextDialogue;
+    [Tooltip("Used for loading a new dialogue object after the current line, it is mandatory to leave this empty if we won't load a new file")]
+    public string nextDialogueFile;
 
     public Vector2 NodePosition
     {

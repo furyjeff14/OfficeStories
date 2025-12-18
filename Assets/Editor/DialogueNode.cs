@@ -61,7 +61,10 @@ public class DialogueNode : Node
         mainContainer.Add(dialogueNumberField);
 
         var nextLineIndexField = new IntegerField("Next Line Index") { value = line.NextLineIndex };
-        nextLineIndexField.RegisterValueChangedCallback(evt => {line.NextLineIndex = evt.newValue; });
+        nextLineIndexField.RegisterValueChangedCallback(evt => {
+            line.NextLineIndex = evt.newValue; 
+            MarkDialogueDirty();
+        });
         mainContainer.Add(nextLineIndexField);
 
         line.OnChangedNextLineIndex += () =>
@@ -70,11 +73,17 @@ public class DialogueNode : Node
         };
 
         var speakerSlotField = new IntegerField("Speaker Slot") { value = line.speakerSlot };
-        speakerSlotField.RegisterValueChangedCallback(evt => line.speakerSlot = evt.newValue);
+        speakerSlotField.RegisterValueChangedCallback(evt => { 
+            line.speakerSlot = evt.newValue; 
+            MarkDialogueDirty(); 
+        });
         mainContainer.Add(speakerSlotField);
 
         var noSpeakerField = new Toggle("No Speaker") { value = line.isDialogueNoSpeaker };
-        noSpeakerField.RegisterValueChangedCallback(evt => line.isDialogueNoSpeaker = evt.newValue);
+        noSpeakerField.RegisterValueChangedCallback(evt => { 
+            line.isDialogueNoSpeaker = evt.newValue; 
+            MarkDialogueDirty(); 
+        });
         mainContainer.Add(noSpeakerField);
 
         var speakerField = new TextField("Speaker") { value = line.speaker };
@@ -82,11 +91,16 @@ public class DialogueNode : Node
         {
             line.speaker = evt.newValue;
             title = line.speaker; // optional: update node title
+            MarkDialogueDirty();
         });
         mainContainer.Add(speakerField);
 
         var textField = new TextField("Text") { value = line.textKey, multiline = true };
-        textField.RegisterValueChangedCallback(evt => line.textKey = evt.newValue);
+        textField.RegisterValueChangedCallback(evt =>
+        {
+            line.textKey = evt.newValue;
+            MarkDialogueDirty();
+        });
         mainContainer.Add(textField);
 
         var speakerImgField = new ObjectField("Speaker Image")
@@ -94,7 +108,10 @@ public class DialogueNode : Node
             objectType = typeof(Sprite),
             value = line.speakerImg
         };
-        speakerImgField.RegisterValueChangedCallback(evt => line.speakerImg = evt.newValue as Sprite);
+        speakerImgField.RegisterValueChangedCallback(evt => { 
+            line.speakerImg = evt.newValue as Sprite; 
+            MarkDialogueDirty();
+        });
         mainContainer.Add(speakerImgField);
 
         var backgroundField = new ObjectField("Background")
@@ -102,7 +119,10 @@ public class DialogueNode : Node
             objectType = typeof(Sprite),
             value = line.background
         };
-        backgroundField.RegisterValueChangedCallback(evt => line.background = evt.newValue as Sprite);
+        backgroundField.RegisterValueChangedCallback(evt => { 
+            line.background = evt.newValue as Sprite; 
+            MarkDialogueDirty(); 
+        });
         mainContainer.Add(backgroundField);
 
 
@@ -121,6 +141,27 @@ public class DialogueNode : Node
         })
         { text = "Add Choice" };
         extensionContainer.Add(addChoiceBtn);
+
+        // --- Dialogue Jump (Next Dialogue File) ---
+        var nextDialogueFileField = new TextField("Next Dialogue File")
+        {
+            value = line.nextDialogueFile ?? string.Empty,
+            tooltip = "Filename or asset name of another DialogueObject (no extension)"
+        };
+
+        nextDialogueFileField.RegisterValueChangedCallback(evt =>
+        {
+            line.nextDialogueFile = evt.newValue.Trim();
+
+#if UNITY_EDITOR
+            var dialogue = graphView.GetCurrentDialogue();
+            if (dialogue != null)
+                EditorUtility.SetDirty(dialogue);
+#endif
+        });
+
+        mainContainer.Add(nextDialogueFileField);
+
 
         RefreshExpandedState();
         RefreshPorts();
@@ -186,6 +227,17 @@ public class DialogueNode : Node
 
         RefreshPorts();
         RefreshExpandedState();
+    }
+
+    void MarkDialogueDirty()
+    {
+#if UNITY_EDITOR
+        var dialogue = graphView.GetCurrentDialogue();
+        if (dialogue == null) return;
+
+        Undo.RecordObject(dialogue, "Dialogue Change");
+        EditorUtility.SetDirty(dialogue);
+#endif
     }
 
 #if UNITY_EDITOR

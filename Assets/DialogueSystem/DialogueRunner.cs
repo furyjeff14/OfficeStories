@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -160,10 +161,13 @@ public class DialogueRunner : MonoBehaviour
             return;
         }
         // Go to another DialogueObject
-        if (choice.nextDialogue != null && choice.nextDialogue.lines.Count > 0)
+        if (choice.nextDialogueFile.Length > 0)
         {
             nextDialogueLine = 0;
-            StartDialogue(choice.nextDialogue);
+            //Add load file for next dialogue
+            Debug.Log("Need to implement loading dialogue from file");
+            DialogueObject obj = DialogueUtility.FindDialogue(choice.nextDialogueFile);
+            StartDialogue(obj);
             return;
         }
 

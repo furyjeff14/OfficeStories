@@ -39,14 +39,14 @@ public class DialogueEdgeConnector : IEdgeConnectorListener
         {
             // Normal choice port
             outputNode.dialogueLine.choices[portIndex].nextLineIndex = inputNode.dialogueLine.dialogueNumber;
-            outputNode.dialogueLine.choices[portIndex].nextDialogue = null;
+            outputNode.dialogueLine.choices[portIndex].nextDialogueFile = "";
         }
         else if (portIndex == -1)
         {
             // Default "Next" output port
            
             outputNode.dialogueLine.NextLineIndex = inputNode.dialogueLine.dialogueNumber;
-            outputNode.dialogueLine.nextDialogue = null;
+            outputNode.dialogueLine.nextDialogueFile = "";
         }
 
 #if UNITY_EDITOR

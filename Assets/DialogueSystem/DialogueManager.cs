@@ -39,10 +39,10 @@ public class DialogueManager : MonoBehaviour
         }
 
         // --- SWITCH TO ANOTHER DIALOGUE ---
-        if (choice.nextDialogue != null &&
-            choice.nextDialogue.lines.Count > 0)
+        if (choice.nextDialogueFile.Length > 0)
         {
-            StartDialogue(choice.nextDialogue);
+            DialogueObject obj = DialogueUtility.FindDialogue(choice.nextDialogueFile);
+            StartDialogue(obj);
             return;
         }
 

@@ -1,9 +1,11 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 public class DialogueGraphWindow : EditorWindow
 {
@@ -20,11 +22,15 @@ public class DialogueGraphWindow : EditorWindow
 
     private void OnEnable()
     {
-        //ConstructGraphView();
-        //GenerateToolbar();
-
         Selection.selectionChanged += OnSelectionChanged;
-        OnSelectionChanged(); // load immediately if already selected
+        if (Selection.activeObject is DialogueObject asset)
+        {
+            OnSelectionChanged(); // load immediately if already selected
+        } else
+        {
+            ConstructGraphView();
+            GenerateToolbar();
+        }
     }
 
     private void OnDisable()
@@ -42,7 +48,10 @@ public class DialogueGraphWindow : EditorWindow
             currentDialogue = asset;
 
             if (graphView == null)
+            {
                 ConstructGraphView();
+                GenerateToolbar();
+            }
 
             graphView.LoadDialogue(currentDialogue);
         }
@@ -56,8 +65,6 @@ public class DialogueGraphWindow : EditorWindow
         graphView = new DialogueGraphView(this, currentDialogue);
         graphView.StretchToParentSize();
         rootVisualElement.Add(graphView);
-
-        GenerateToolbar();
     }
 
     private void GenerateToolbar()
@@ -100,7 +107,71 @@ public class DialogueGraphWindow : EditorWindow
         { text = "Add Line" };
         toolbar.Add(addLineBtn);
 
+        // Add new import button
+        var importBtn = new Button(() =>
+        {
+            ImportStoryText();
+        })
+        { text = "Import Dialogue Text" };
+        toolbar.Add(importBtn);
+
+
         rootVisualElement.Add(toolbar);
+    }
+
+    void ImportStoryText()
+    {
+        string txtPath = EditorUtility.OpenFilePanel("Import Story Script", Application.dataPath, "txt");
+        if (string.IsNullOrEmpty(txtPath)) return;
+
+        string defaultName = Path.GetFileNameWithoutExtension(txtPath);
+
+        string assetPath = EditorUtility.SaveFilePanelInProject("Create Dialogue Asset", defaultName, "asset", "Choose location");
+        if (string.IsNullOrEmpty(assetPath)) return;
+
+        // Create DialogueObject asset
+        DialogueObject dialogue = ScriptableObject.CreateInstance<DialogueObject>();
+        AssetDatabase.CreateAsset(dialogue, assetPath);
+        AssetDatabase.SaveAssets();
+
+        // Import lines/choices into DialogueObject
+        DialogueStoryImporter.Import(dialogue, txtPath);
+
+        // Ensure GraphView exists
+        if (graphView == null)
+        {
+            ConstructGraphView();
+            GenerateToolbar();
+        }
+
+        // Load the imported dialogue AFTER GraphView is ready
+        EditorApplication.delayCall += () =>
+        {
+            currentDialogue = dialogue;
+
+            // Select and ping in Project
+            Selection.activeObject = dialogue;
+            EditorGUIUtility.PingObject(dialogue);
+
+            // Safely populate GraphView
+            if (graphView != null && graphView.parent != null)
+            {
+                graphView.LoadDialogue(dialogue);
+            }
+            else
+            {
+                // If parent not ready, schedule another delay
+                EditorApplication.delayCall += () =>
+                {
+                    graphView?.LoadDialogue(dialogue);
+                };
+            }
+        };
+    }
+
+    void RebuildGraphFromDialogue()
+    {
+        graphView.LoadDialogue(currentDialogue);
     }
 
 #if UNITY_EDITOR

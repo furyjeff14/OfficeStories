@@ -1,0 +1,33 @@
+# DIALOGUE: NewDialogue
+# AutoAdvance: True
+
+[LINE 0]
+speakerSlot: 0
+noSpeaker: False
+speaker: test1
+text: test
+
+assets:
+  speakerImage: faust
+  background: don
+
+defaultNext: 1
+position: (206, 144)
+
+-> END
+
+[LINE 1]
+speakerSlot: 0
+noSpeaker: False
+speaker: test1
+text: test
+
+assets:
+  speakerImage: faust
+  background: don
+
+defaultNext: -1
+position: (545, 136)
+
+-> END
+
