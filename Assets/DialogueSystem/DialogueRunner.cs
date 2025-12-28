@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -35,6 +36,10 @@ public class DialogueRunner : MonoBehaviour
     private Image[] dialogueCharacters;
 
     private int nextDialogueLine = 0;
+    private int charactersPerSecond = 30;
+
+    public Action OnDialogueStart;
+    public Action OnDialogueEnd;
 
     private void Awake()
     {
@@ -50,9 +55,6 @@ public class DialogueRunner : MonoBehaviour
 
     void Start()
     {
-        if (startingDialogue != null)
-            StartDialogue(startingDialogue);
-
         nextButton.onClick.AddListener(NextLine);
         previousButton.onClick.AddListener(ShowPreviousLine);
     }
@@ -86,21 +88,34 @@ public class DialogueRunner : MonoBehaviour
 
     public void StartDialogue(DialogueObject dialogue)
     {
+        OnDialogueStart?.Invoke();
         history.Clear();
         currentDialogue = dialogue;
+        choicesContainer.gameObject.SetActive(false);
         dialogueContainer.SetActive(true);
         if (dialogue.lines.Count > 0)
-            ShowLine(dialogue.lines[0]);
+            StartCoroutine(ShowLine(dialogue.lines[0]));
         else
+        {
             EndDialogue();
+        }
     }
 
-    void ShowLine(DialogueLine line)
+    private IEnumerator ShowLine(DialogueLine line)
     {
         currentLine = line;
 
         dialogueBackground.sprite = line.background;
         speakerText.text = line.speaker;
+
+        dialogueText.text = "";
+        string textToType = line.textKey;
+        foreach (char c in textToType)
+        {
+            dialogueText.text += c;
+            yield return new WaitForSeconds(1f / charactersPerSecond);
+        }
+
         dialogueText.text = line.textKey;
 
         if (!line.isDialogueNoSpeaker)
@@ -200,5 +215,6 @@ public class DialogueRunner : MonoBehaviour
             Destroy(child.gameObject);
         currentLine = null;
         currentDialogue = null;
+        OnDialogueEnd?.Invoke();
     }
 }

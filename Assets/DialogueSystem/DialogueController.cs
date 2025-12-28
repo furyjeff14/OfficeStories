@@ -26,7 +26,7 @@ public class DialogueController : MonoBehaviour
 
     private void Start()
     {
-        DialogueRunner.Instance.StartDialogue(dialogueToPlay);
+        //DialogueRunner.Instance.StartDialogue(dialogueToPlay);
     }
 
     // Call this method when the player interacts with the NPC

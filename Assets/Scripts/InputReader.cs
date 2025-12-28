@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 public class InputReader : MonoBehaviour
 {
+    public static InputReader Instance;
+
     private PlayerControls controls;
 
     public Vector2 _mouseDelta;
@@ -29,6 +31,15 @@ public class InputReader : MonoBehaviour
 
     private void Awake()
     {
+        if(InputReader.Instance != null && InputReader.Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+
+        Debug.Log("Set input reader");
+        Instance = this;
+
         // Initialize the generated InputActions class
         controls = new PlayerControls();
 
@@ -117,5 +128,11 @@ public class InputReader : MonoBehaviour
         if (!context.performed) return;
         onLockOnToggled?.Invoke();
         onSprintDeactivated?.Invoke();
+    }
+
+    public void SetMoveFromJoystick(Vector2 value)
+    {
+        _moveComposite = value;
+        _movementInputDetected = value.sqrMagnitude > 0.001f;
     }
 }

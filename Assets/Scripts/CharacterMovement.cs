@@ -20,18 +20,24 @@ public class CharacterMovement : MonoBehaviour
 
     private void Awake()
     {
-        // DontDestroyOnLoad(gameObject);
+        
     }
+
 
     private void OnDestroy()
     {
+        DialogueRunner.Instance.OnDialogueStart -= () => EnableMovement(false);
+        DialogueRunner.Instance.OnDialogueEnd -= () => EnableMovement(true);
     }
 
     void Start()
     {
+        inputReader = InputReader.Instance;
         controller = GetComponent<CharacterController>();
-        inputReader = GetComponent<InputReader>();
         anim = GetComponent<PlayerAnimatorController>();
+
+        DialogueRunner.Instance.OnDialogueStart += () => EnableMovement(false);
+        DialogueRunner.Instance.OnDialogueEnd += () => EnableMovement(true);
         EnableMovement(true);
     }
 
