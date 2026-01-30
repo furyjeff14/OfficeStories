@@ -6,7 +6,7 @@ public class InputReader : MonoBehaviour
 {
     public static InputReader Instance;
 
-    private PlayerControls controls;
+    private Controls controls;
 
     public Vector2 _mouseDelta;
     public Vector2 _moveComposite;
@@ -41,7 +41,7 @@ public class InputReader : MonoBehaviour
         Instance = this;
 
         // Initialize the generated InputActions class
-        controls = new PlayerControls();
+        controls = new Controls();
 
         controls.Player.Move.started += OnMove;
         controls.Player.Move.performed += OnMove;

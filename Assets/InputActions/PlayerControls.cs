@@ -72,7 +72,7 @@ using UnityEngine.InputSystem.Utilities;
 /// }
 /// </code>
 /// </example>
-public partial class @PlayerControls: IInputActionCollection2, IDisposable
+public partial class @Controls: IInputActionCollection2, IDisposable
 {
     /// <summary>
     /// Provides access to the underlying asset instance.
@@ -82,11 +82,11 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     /// <summary>
     /// Constructs a new instance.
     /// </summary>
-    public PlayerControls()
+    public @Controls()
     {
         asset = InputActionAsset.FromJson(@"{
     ""version"": 1,
-    ""name"": ""PlayerControls"",
+    ""name"": ""Controls"",
     ""maps"": [
         {
             ""name"": ""Player"",
@@ -458,9 +458,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_LockOn = m_Player.FindAction("LockOn", throwIfNotFound: true);
     }
 
-    ~PlayerControls()
+    ~@Controls()
     {
-        UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, PlayerControls.Player.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, Controls.Player.Disable() has not been called.");
     }
 
     /// <summary>
@@ -549,12 +549,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     /// </summary>
     public struct PlayerActions
     {
-        private PlayerControls m_Wrapper;
+        private @Controls m_Wrapper;
 
         /// <summary>
         /// Construct a new instance of the input action map wrapper class.
         /// </summary>
-        public PlayerActions(PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public PlayerActions(@Controls wrapper) { m_Wrapper = wrapper; }
         /// <summary>
         /// Provides access to the underlying input action "Player/Jump".
         /// </summary>
