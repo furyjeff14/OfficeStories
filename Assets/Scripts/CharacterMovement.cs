@@ -64,6 +64,7 @@ public class CharacterMovement : MonoBehaviour
         if (horizontal != 0 || vertical != 0)
         {
             anim.SetState(1);
+            Debug.Log("anim state: 1");
             Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
             targetVelocity = new Vector3(moveDirection.x, targetVelocity.y, moveDirection.z);
 
@@ -73,6 +74,7 @@ public class CharacterMovement : MonoBehaviour
         }
         else
         {
+            Debug.Log("anim state: 0");
             anim.SetState(0);
         }
         GroundedCheck();
